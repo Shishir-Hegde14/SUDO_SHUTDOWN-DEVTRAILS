@@ -16,8 +16,6 @@ Existing insurance systems do not address this specific problem well, because th
 This creates a gap in protection for gig workers whose income is volatile, weekly in nature, and highly sensitive to external operating conditions.
 
 
-Here’s a more natural version. It reads less polished in an artificial way and more like a student team wrote it, while still sounding strong.
-
 ## Persona Selection
 
 1) What is our chosen persona?
