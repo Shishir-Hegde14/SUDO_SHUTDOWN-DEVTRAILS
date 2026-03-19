@@ -1,12 +1,12 @@
-# SUDO_SHUTDOWN-DEVTRIALS
-Team: Sudo Shutdown. 
+# SUDO_SHUTDOWN-DEVTRAILS
+Team: Sudo Shutdown
 
 
-[project title] — AI-Powered Parametric Income Protection for Quick-Commerce Riders
+### Lastmile — an AI-Powered Parametric Income Protection for Quick-Commerce Riders
 
-A mobile-first parametric insurance platform that protects quick-commerce delivery riders from income loss caused by verified external disruptions.
+Lastmile is a mobile-first parametric insurance platform that protects quick-commerce delivery riders from income loss caused by verified external disruptions.
 
-Problem Statement:
+Problem Statement:  
 Quick-commerce delivery riders are an essential part of urban delivery ecosystem. Their earnings depend on continuous order flow, active working hours, and access to operational delivery zones. 
 However, external disruptions such as heavy rain, flooding, waterlogging, severe AQI, heatwaves, dark-store shutdowns, and platform outages can sharply reduce their ability to work and earn.
 
@@ -44,3 +44,17 @@ That kind of expansion means more riders, more delivery density, and more depend
 6) Why is this persona the best fit for our product?:  
 For our use case, this persona makes the most sense. The rider works in a defined area, the earning loss happens quickly when disruptions occur, and the events affecting them can be tracked in a more reliable way.
 That makes it easier for us to build a product that is simple to explain, practical to use, and realistic to automate. It also makes fraud checks more manageable because we can match claims against location, activity, and actual disruption events.
+
+
+## Proposed Solution
+%%{init: {"theme":"dark", "themeVariables":{"primaryColor":"#ff9800","edgeLabelBackground":"#222222","fontFamily":"Arial"}}}%%
+flowchart TD
+    A[rider signs up] --> B[gets personalized plan]
+    B --> C[system monitors conditions (rain, traffic, demand)]
+    C --> D{disruption happens?}
+    D -->|no| C
+    D -->|yes| E[system detects impact]
+    E --> F[auto claim created]
+    F --> G[quick validation]
+    G --> H[instant payout]
+    H --> I[rider income protected]
