@@ -6,7 +6,7 @@ Team: Sudo Shutdown
 
 Lastmile is a mobile-first parametric insurance platform that protects quick-commerce delivery riders from income loss caused by verified external disruptions.
 
-Problem Statement:  
+### Problem Statement:  
 Quick-commerce delivery riders are an essential part of urban delivery ecosystem. Their earnings depend on continuous order flow, active working hours, and access to operational delivery zones. 
 However, external disruptions such as heavy rain, flooding, waterlogging, severe AQI, heatwaves, dark-store shutdowns, and platform outages can sharply reduce their ability to work and earn.
 
@@ -47,14 +47,4 @@ That makes it easier for us to build a product that is simple to explain, practi
 
 
 ## Proposed Solution
-%%{init: {"theme":"dark", "themeVariables":{"primaryColor":"#ff9800","edgeLabelBackground":"#222222","fontFamily":"Arial"}}}%%
-flowchart TD
-    A[rider signs up] --> B[gets personalized plan]
-    B --> C[system monitors conditions (rain, traffic, demand)]
-    C --> D{disruption happens?}
-    D -->|no| C
-    D -->|yes| E[system detects impact]
-    E --> F[auto claim created]
-    F --> G[quick validation]
-    G --> H[instant payout]
-    H --> I[rider income protected]
+![rider flowchart](https://i.ibb.co/CKCbWhbG/1.png)
