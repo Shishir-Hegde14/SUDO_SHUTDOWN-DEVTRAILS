@@ -8,6 +8,22 @@
 
 LastMile is a mobile-first parametric insurance platform that protects quick-commerce delivery riders from income loss caused by verified external disruptions.
 
+## Table of Contents
+
+1) [Problem Statement](#problem-statement)
+2) [Persona Selection](#persona-selection)
+3) [Proposed Solution](#proposed-solution)
+4) [Platform Choice: Why Mobile](#platform-choice-why-mobile)
+5) [Frontend and Mobile App Flow](#frontend-and-mobile-app-flow)
+6) [Backend System and Processing Flow](#backend-system-and-processing-flow)
+7) [Weekly Premium Calculation Logic](#weekly-premium-calculation-logic)
+8) [Live Trigger Engine](#live-trigger-engine)
+9) [Fraud Detection and Claim Validation Engine](#fraud-detection-and-claim-validation-engine)
+10) [Adversarial Defense & Anti-Spoofing Strategy](#adversarial-defense--anti-spoofing-strategy)
+11)  [Development Plan](#development-plan)
+12) [LastMile in Action](#lastmile-in-action)
+
+
 ## Problem Statement
 
 Quick-commerce delivery riders are an essential part of the urban delivery ecosystem. Their earnings depend on continuous order flow, active working hours, and access to operational delivery zones.
