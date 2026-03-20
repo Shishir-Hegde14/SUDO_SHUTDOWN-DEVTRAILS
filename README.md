@@ -4,9 +4,9 @@
 
 ## Overview
 
-### Lastmile — an AI-Powered Parametric Income Protection for Quick-Commerce Riders
+### LastMile — an AI-Powered Parametric Income Protection for Quick-Commerce Riders
 
-Lastmile is a mobile-first parametric insurance platform that protects quick-commerce delivery riders from income loss caused by verified external disruptions.
+LastMile is a mobile-first parametric insurance platform that protects quick-commerce delivery riders from income loss caused by verified external disruptions.
 
 ## Problem Statement
 
@@ -315,7 +315,7 @@ Once a claim is approved, payouts are processed automatically.
 The backend uses a combination of databases and caching systems.
 
 **Storage**
-- PostgreSQL or MongoDB for primary data
+- PostgreSQL for primary data
 - Redis for caching, OTP storage, and session support
 
 **Data stored**
@@ -901,3 +901,11 @@ Research, ideation, persona definition, README documentation — no prototype bu
 ### **Phase 3 (Weeks 5–6):**
 - **Frontend:** Payout history screens, profile and settings, UI polish
 - **Backend:** Fraud detection layer, payments and payout service, background processing, admin dashboard, final demo video and pitch deck
+
+## LastMile in Action
+
+### **Scenario — Claim Approved After Hold**
+Meera is a Blinkit rider in Koramangala, Bengaluru. On a Monday evening, heavy rainfall crosses the trigger threshold in her zone. LastMile auto-generates a claim on her behalf. The fraud engine runs its checks — her GPS shows her in the zone, but her mobile signal briefly dropped during the storm, causing a 4-minute gap in location data. The rule-based check flags this as a medium-risk signal and moves the claim into a 2-hour hold. Meera receives a notification: "Your disruption claim is being verified. You will hear back within 2 hours." She continues her shift. Within 40 minutes, her GPS signal recovers, her accelerometer confirms consistent two-wheeler motion, and her movement pattern matches her historical shift behavior. All device-level signals resolve in her favor. The hold clears automatically and ₹75 is credited to her UPI account — no action required from Meera at any point.
+
+### **Scenario — Claim Rejected**
+Vikram has a Zepto rider account registered in HSR Layout. During a declared bandh affecting the zone, the trigger engine fires and auto-generates a claim. The fraud engine runs its checks. Vikram's GPS coordinates place him in the affected zone — but his accelerometer shows zero motion, his phone is connected to a home WiFi network with full signal strength, and his gyroscope shows no tilt or vibration consistent with riding. His work pattern signals show he has not completed a single delivery in the past 6 days, and this is his second claim in 8 days despite no recorded active shifts. His device ID is also linked to another account that claimed the same bandh event 12 minutes earlier. The ML model returns a high fraud risk score. The claim is automatically rejected. Vikram receives a notification: "Your claim could not be verified. Our system could not confirm active rider presence in the disrupted zone during the event window." No payout is issued.
