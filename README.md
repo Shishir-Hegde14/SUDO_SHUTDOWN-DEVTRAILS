@@ -392,6 +392,212 @@ The backend is responsible for:
 
 All critical logic is handled on the backend, enabling a fully automated system where claims and payouts are triggered without manual intervention.
 
+
+## Weekly Premium Calculation Logic
+
+Our pricing system is designed to generate a **dynamic weekly insurance premium** instead of offering one fixed price to every rider. The idea is simple: the premium should reflect both the **likelihood of disruption** and the **amount of income the rider is trying to protect** in that particular week.
+
+We do not price the policy only based on whether the week looks “good” or “bad.” Instead, we calculate the premium based on the rider’s **expected loss exposure** for the upcoming week.
+
+### Core Pricing Principle
+
+The weekly premium is based on three major components:
+
+1. **Expected Weekly Earnings**  
+   This estimates how much the rider is likely to earn in the coming week.
+
+2. **Probability of Covered Disruption**  
+   This estimates how likely it is that a covered disruption will affect the rider’s ability to work during that week.
+
+3. **Loss Severity**  
+   This estimates how much of the rider’s expected earnings could be lost if that disruption actually occurs.
+
+Using these three components, the system calculates:
+
+**Expected Loss = Expected Weekly Earnings × Probability of Disruption × Loss Severity**
+
+After this, the expected loss is adjusted with business and product factors to generate the final premium.
+
+**Final Premium = Expected Loss + Risk Loading + Operational Loading + Fraud Reserve + Plan Adjustment**
+
+---
+
+### Why the Premium Changes Every Week
+
+The premium is dynamic because the rider’s risk is dynamic.
+
+A rider’s weekly risk can change because of:
+- weather conditions
+- AQI and environmental conditions
+- local shutdowns, bandhs, or curfews
+- fuel price changes
+- city-level demand shifts
+- holiday and festival weeks
+- major sports or public events
+- weekly earnings pattern
+- zone-level consumption trends
+- store / hub dependency
+- selected policy coverage
+
+This means the same rider may not receive the same premium every week.
+
+---
+
+### How the System Thinks About Pricing
+
+Our pricing logic combines **two important ideas**:
+
+#### 1. Event Risk
+This measures how likely it is that a covered disruption may happen.
+
+Examples:
+- heavy rain
+- flooding or waterlogging
+- severe AQI
+- heatwave conditions
+- bandh or curfew
+- dark-store shutdown
+- platform outage
+
+If the system predicts that the coming week has a higher chance of such events, the premium increases.
+
+#### 2. Earnings Exposure
+This measures how much income is at risk if something goes wrong.
+
+For example:
+- festival weeks may increase order volume
+- public holidays may increase demand
+- cricket matches may increase food and grocery orders
+- long weekends may increase rider earnings potential
+- high-consumption zones may create larger earning opportunities
+
+Even if the weather is stable, a rider may still receive a higher premium during a high-demand week because there is **more income to protect**.
+
+This is important:  
+A week can look “good” in terms of weather but still carry a higher premium if the rider’s expected earning opportunity is much higher than usual.
+
+---
+
+### Example of How Pricing Works
+
+#### Normal Week
+- Expected Weekly Earnings = ₹5,000
+- Probability of Disruption = 8%
+- Loss Severity = 20%
+
+Expected Loss = ₹5,000 × 0.08 × 0.20 = ₹80
+
+After adding loadings and adjustments, the final weekly premium may be around ₹95–₹110.
+
+#### Festival or High-Consumption Week
+- Expected Weekly Earnings = ₹7,000
+- Probability of Disruption = 8%
+- Loss Severity = 20%
+
+Expected Loss = ₹7,000 × 0.08 × 0.20 = ₹112
+
+In this case, the weather risk is the same, but the premium is still higher because the rider has more income at risk that week.
+
+#### High-Risk Week
+- Expected Weekly Earnings = ₹6,000
+- Probability of Disruption = 20%
+- Loss Severity = 30%
+
+Expected Loss = ₹6,000 × 0.20 × 0.30 = ₹360
+
+This week would receive a significantly higher premium because the system predicts both higher disruption risk and higher possible income loss.
+
+---
+
+### What the Pricing Model Considers
+
+The pricing engine can use multiple categories of inputs:
+
+#### Rider and Work Profile
+- platform used
+- vehicle type
+- average working hours
+- average working days per week
+- average weekly earnings
+- average deliveries per day
+- work pattern during peak hours
+- dependence on a specific zone or store
+- number of active delivery zones
+- income volatility
+
+#### Zone and City Risk
+- city and locality
+- population density
+- demand density
+- quick-commerce penetration
+- flood-prone score
+- AQI history
+- heat exposure
+- local road and traffic vulnerability
+- historical disruption frequency
+- city consumption patterns
+
+#### Weekly Context Signals
+- weather forecast
+- rainfall intensity
+- flood alerts
+- AQI levels
+- heatwave alerts
+- bandh or shutdown alerts
+- local restrictions
+- fuel price changes
+- public holidays
+- festival periods
+- high-demand event weeks
+- sports events
+- local consumption spikes
+
+#### Policy Features
+- coverage selected
+- policy tier
+- payout cap
+- insured earnings value
+- covered risk categories
+- coverage period
+
+---
+
+### ML Model Design
+
+To support this pricing system, our product uses a **supervised machine learning regression model**.
+
+The model is designed to estimate:
+- expected weekly earnings
+- probability of covered disruption
+- expected loss severity
+
+These model outputs are then used to compute expected weekly loss and generate the final premium.
+
+Instead of using one fixed rule for everyone, the model allows pricing to adapt to:
+- rider-specific behavior
+- city and zone-specific conditions
+- real-time weekly risk
+- weekly earning opportunity
+
+This makes pricing more realistic, explainable, and aligned with the actual working conditions of gig delivery riders.
+
+---
+
+### Final Pricing Philosophy
+
+Our goal is to make the weekly premium:
+- dynamic
+- fair
+- explainable
+- risk-linked
+- sensitive to both disruption risk and earning exposure
+
+A rider should pay more when the coming week carries greater insured earning exposure or higher disruption probability, and less when the week is more stable and the expected payout risk is lower.
+
+In short, our pricing model is designed to answer one core question:
+
+**How much income is realistically at risk for this rider in the upcoming week, and what is the right weekly premium to protect it?**
+
 ## Development Plan
 
 ### **Phase 1 (Weeks 1–2):** 
