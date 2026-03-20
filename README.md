@@ -49,6 +49,18 @@ That makes it easier for us to build a product that is simple to explain, practi
 ## Proposed Solution
 ![rider flowchart](https://i.ibb.co/CKCbWhbG/1.png)
 
+## Platform Choice : Why Mobile
+
+LastMile is built as a mobile app because the product's core features are only possible on a phone:
+
+- **Riders work in the field** — they are on the move during shifts, not at a desk where a web platform would be accessible
+- **Background GPS tracking** — verifying that a rider was active in a disrupted zone requires native mobile GPS, which cannot run reliably in a browser
+- **Instant push notifications** — disruption alerts and payout confirmations need to reach the rider mid-shift without any action on their part
+- **UPI integration** — payout confirmation is native to the Android ecosystem that nearly all quick-commerce riders use as their primary device
+- **Device reality** — 90%+ of quick-commerce riders use Android smartphones as their only connected device; a web platform would simply not reach them
+
+A web platform would lose the GPS layer, instant notifications, and seamless UPI experience — none of which are optional for this product.
+
 ## Frontend and Mobile App Flow
 
 Our product is designed as a **mobile-first app** for quick-commerce delivery riders. The frontend is centered around a simple rider journey: onboarding, plan selection, coverage visibility, claims tracking, and payout status.
