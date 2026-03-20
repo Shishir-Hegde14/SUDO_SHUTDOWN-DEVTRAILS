@@ -598,6 +598,29 @@ In short, our pricing model is designed to answer one core question:
 
 **How much income is realistically at risk for this rider in the upcoming week, and what is the right weekly premium to protect it?**
 
+## Live Trigger Engine
+
+Our platform uses a **live trigger engine** to detect whether a valid covered disruption has occurred in the rider’s insured zone and policy window. Instead of using a machine learning model for this step, the system relies on **real-time event monitoring and rule-based checks**.
+
+The engine continuously watches a defined set of covered triggers such as:
+- heavy rain
+- flooding / waterlogging
+- severe AQI
+- heatwave conditions
+- dark-store shutdowns
+- platform outages
+- bandh / curfew / local shutdown events
+
+When one of these triggers crosses the defined threshold, the system checks whether:
+- the rider has an active policy
+- the rider is covered in that zone
+- the event overlaps the insured time window
+- the trigger meets the payout conditions
+
+If these checks are satisfied, the system creates a **potential claim event** and moves it to the next stage for validation and payout decisioning.
+
+This makes the trigger layer objective, explainable, and well-suited for a parametric insurance workflow.
+
 ## Development Plan
 
 ### **Phase 1 (Weeks 1–2):** 
