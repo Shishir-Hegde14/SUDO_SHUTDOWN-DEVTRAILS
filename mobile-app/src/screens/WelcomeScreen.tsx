@@ -16,7 +16,7 @@ export function WelcomeScreen({ navigation }: Props) {
           LastMile keeps your earning journey protected with a clear and simple onboarding flow.
         </Text>
       </View>
-      <PrimaryButton label="Get Started" onPress={() => navigation.navigate("Login")} />
+      <PrimaryButton label="Get Started" onPress={() => navigation.navigate("Auth")} />
     </ScreenContainer>
   );
 }

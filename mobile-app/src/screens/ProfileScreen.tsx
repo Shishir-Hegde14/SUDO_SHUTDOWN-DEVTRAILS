@@ -9,7 +9,7 @@ import { colors, radius, spacing, typography } from "../constants/theme";
 import { useAppStore } from "../store/AppContext";
 
 export function ProfileScreen() {
-  const { onboarding, updateOnboarding, resetOnboarding } = useAppStore();
+  const { onboarding, updateOnboarding, clearAuthSession } = useAppStore();
 
   const [fullName, setFullName] = useState(onboarding.fullName);
   const [gender, setGender] = useState(onboarding.gender);
@@ -139,7 +139,7 @@ export function ProfileScreen() {
       <FormInput label="Bank address" value={bankAddress} onChangeText={setBankAddress} placeholder="Enter bank address" />
 
       <PrimaryButton label="Save Profile" onPress={saveProfile} />
-      <PrimaryButton label="Reset Mock Data" variant="secondary" onPress={resetOnboarding} />
+      <PrimaryButton label="Sign Out" variant="secondary" onPress={() => void clearAuthSession()} />
     </ScreenContainer>
   );
 }

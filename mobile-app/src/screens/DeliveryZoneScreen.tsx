@@ -19,7 +19,7 @@ export function DeliveryZoneScreen({ navigation }: Props) {
   const shouldShowOther = workApp === "Other";
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onboardingStep={4}>
       <View style={styles.content}>
         <Text style={styles.title}>Step 4</Text>
         <Text style={styles.subtitle}>Work setup</Text>

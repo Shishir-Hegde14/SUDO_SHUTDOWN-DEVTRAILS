@@ -46,7 +46,7 @@ export function WorkProfileScreen({ navigation }: Props) {
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onboardingStep={3}>
       <View style={styles.content}>
         <Text style={styles.title}>Step 3</Text>
         <Text style={styles.subtitle}>Address and location</Text>

@@ -9,9 +9,10 @@ import { colors, gradients, radius, shadows, spacing } from "../constants/theme"
 type Props = PropsWithChildren<{
   scroll?: boolean;
   showHeader?: boolean;
+  onboardingStep?: 1 | 2 | 3 | 4 | 5 | 6 | 7;
 }>;
 
-export function ScreenContainer({ children, scroll = true, showHeader = true }: Props) {
+export function ScreenContainer({ children, scroll = true, showHeader = true, onboardingStep }: Props) {
   const navigation = useNavigation();
   const canGoBack = navigation.canGoBack();
 
@@ -29,12 +30,12 @@ export function ScreenContainer({ children, scroll = true, showHeader = true }: 
         <Ionicons name="chevron-back" size={20} color={colors.text} />
       </Pressable>
 
-        <View style={styles.brandWrap}>
-          <View style={styles.logoChip}>
-            <Image source={require("../../assets/LastMile.png")} style={styles.logoImage} resizeMode="contain" />
-          </View>
-          <Text style={styles.brandText}>LastMile</Text>
+      <View style={styles.brandWrap}>
+        <View style={styles.logoChip}>
+          <Image source={require("../../assets/LastMile.png")} style={styles.logoImage} resizeMode="contain" />
         </View>
+        <Text style={styles.brandText}>LastMile</Text>
+      </View>
 
       <View style={styles.backButton} />
     </View>

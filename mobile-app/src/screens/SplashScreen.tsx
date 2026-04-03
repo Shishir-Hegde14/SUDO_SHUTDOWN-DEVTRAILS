@@ -1,21 +1,8 @@
-import { useEffect } from "react";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../navigation/types";
 import { colors, gradients, shadows } from "../constants/theme";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Splash">;
-
-export function SplashScreen({ navigation }: Props) {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace("Welcome");
-    }, 2600);
-
-    return () => clearTimeout(timer);
-  }, [navigation]);
-
+export function SplashScreen() {
   return (
     <LinearGradient colors={gradients.background} style={styles.container}>
       <View style={styles.glow} />

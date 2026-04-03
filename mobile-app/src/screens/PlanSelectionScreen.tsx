@@ -13,13 +13,16 @@ type Props = NativeStackScreenProps<RootStackParamList, "PlanSelection">;
 
 export function PlanSelectionScreen({ navigation }: Props) {
   const { onboarding, updateOnboarding } = useAppStore();
-  const [loading, setLoading] = useState(false);
+  const [detectingArea, setDetectingArea] = useState(false);
   const [workAreaCenter, setWorkAreaCenter] = useState(onboarding.workAreaCenter);
   const [workAreaRegion, setWorkAreaRegion] = useState(onboarding.workAreaRegion);
+  const [workAreaLatitude, setWorkAreaLatitude] = useState<number | null>(onboarding.workAreaLatitude);
+  const [workAreaLongitude, setWorkAreaLongitude] = useState<number | null>(onboarding.workAreaLongitude);
+  const [workAreaState, setWorkAreaState] = useState(onboarding.workAreaState);
 
   const detectWorkArea = async () => {
     try {
-      setLoading(true);
+      setDetectingArea(true);
       const permission = await Location.requestForegroundPermissionsAsync();
       if (permission.status !== "granted") {
         Alert.alert("Permission needed", "Please allow location permission so we can set your work area.");
@@ -28,40 +31,46 @@ export function PlanSelectionScreen({ navigation }: Props) {
 
       const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const { latitude, longitude } = position.coords;
-      const latDelta = 0.03;
-      const lngDelta = 0.03;
+      const reverse = await Location.reverseGeocodeAsync({ latitude, longitude });
+      const first = reverse[0];
 
-      const center = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-      const region = `Approx 3km radius. Bounds: ${(latitude - latDelta).toFixed(5)}, ${(
-        longitude - lngDelta
-      ).toFixed(5)} to ${(latitude + latDelta).toFixed(5)}, ${(longitude + lngDelta).toFixed(5)}`;
+      const locality = first?.district || first?.subregion || first?.city || "Detected locality";
+      const city = first?.city || first?.subregion || "";
+      const state = first?.region || "";
+      const center = city ? `${locality}, ${city}` : locality;
+      const region = state
+        ? `Approx 3km radius around ${locality}, ${state}`
+        : `Approx 3km radius around ${locality}`;
 
       setWorkAreaCenter(center);
       setWorkAreaRegion(region);
+      setWorkAreaLatitude(latitude);
+      setWorkAreaLongitude(longitude);
+      setWorkAreaState(state);
     } catch {
       Alert.alert("Location error", "Could not get work area location. Please try again.");
     } finally {
-      setLoading(false);
+      setDetectingArea(false);
     }
   };
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onboardingStep={6}>
       <View style={styles.content}>
         <Text style={styles.title}>Step 6</Text>
         <Text style={styles.subtitle}>Area of working</Text>
         <Text style={styles.info}>We use your current location to estimate your regular delivery region.</Text>
 
         <PrimaryButton label="Detect Area from GPS" variant="secondary" onPress={detectWorkArea} />
-        {loading && <ActivityIndicator style={styles.loader} color={colors.primary} />}
+        {detectingArea && <ActivityIndicator style={styles.loader} color={colors.primary} />}
 
         {!!workAreaCenter && (
-          <InfoCard title="Detected center">
+          <InfoCard title="Detected work locality">
             <Text style={styles.value}>{workAreaCenter}</Text>
           </InfoCard>
         )}
         {!!workAreaRegion && (
-          <InfoCard title="Approximate region">
+          <InfoCard title="Coverage radius">
             <Text style={styles.value}>{workAreaRegion}</Text>
           </InfoCard>
         )}
@@ -69,9 +78,16 @@ export function PlanSelectionScreen({ navigation }: Props) {
 
       <PrimaryButton
         label="Next"
-        disabled={!workAreaCenter || !workAreaRegion}
+        disabled={!workAreaCenter || !workAreaRegion || workAreaLatitude === null || workAreaLongitude === null}
         onPress={() => {
-          updateOnboarding({ workAreaCenter, workAreaRegion });
+          updateOnboarding({
+            workAreaCenter,
+            workAreaRegion,
+            workAreaLatitude,
+            workAreaLongitude,
+            workAreaState,
+            city: onboarding.city || (workAreaCenter.includes(",") ? workAreaCenter.split(",").pop()?.trim() || "" : ""),
+          });
           navigation.navigate("PolicyConfirmation");
         }}
       />

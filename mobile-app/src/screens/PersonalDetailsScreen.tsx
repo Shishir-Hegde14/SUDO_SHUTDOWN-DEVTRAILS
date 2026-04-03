@@ -15,13 +15,13 @@ export function PersonalDetailsScreen({ navigation }: Props) {
   const [email, setEmail] = useState(onboarding.email);
   const [phone, setPhone] = useState(onboarding.phone);
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
   const cleanedPhone = phone.replace(/\D/g, "");
   const isEmailValid = emailRegex.test(email.trim());
   const isPhoneValid = cleanedPhone.length >= 10;
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onboardingStep={2}>
       <View style={styles.content}>
         <Text style={styles.title}>Step 2</Text>
         <Text style={styles.subtitle}>Contact details</Text>
@@ -43,7 +43,7 @@ export function PersonalDetailsScreen({ navigation }: Props) {
           onChangeText={setPhone}
         />
         {!isEmailValid && email.trim().length > 0 && (
-          <Text style={styles.error}>Please enter a valid email address.</Text>
+          <Text style={styles.error}>Please enter a valid Gmail address.</Text>
         )}
       </View>
 

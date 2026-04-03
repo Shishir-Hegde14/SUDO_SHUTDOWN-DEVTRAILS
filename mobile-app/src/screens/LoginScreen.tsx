@@ -17,7 +17,7 @@ export function LoginScreen({ navigation }: Props) {
   const [gender, setGender] = useState(onboarding.gender);
 
   return (
-    <ScreenContainer>
+    <ScreenContainer onboardingStep={1}>
       <View style={styles.content}>
         <Text style={styles.title}>Step 1</Text>
         <Text style={styles.subtitle}>Tell us about yourself</Text>

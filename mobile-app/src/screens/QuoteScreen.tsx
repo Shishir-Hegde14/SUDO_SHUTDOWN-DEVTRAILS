@@ -4,25 +4,66 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { FormInput } from "../components/FormInput";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { ScreenContainer } from "../components/ScreenContainer";
+import { SelectInput } from "../components/SelectInput";
 import { colors, radius, shadows, spacing, typography } from "../constants/theme";
 import { RootStackParamList } from "../navigation/types";
 import { useAppStore } from "../store/AppContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Quote">;
 const weekDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const hourOptions = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, "0"));
+const minuteOptions = ["00", "15", "30", "45"];
+const meridiemOptions = ["AM", "PM"];
+
+function parseTimeParts(value: string, fallbackHour = "09", fallbackMinute = "00", fallbackMeridiem = "AM") {
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})\s?(AM|PM)$/i);
+  if (!match) {
+    return { hour: fallbackHour, minute: fallbackMinute, meridiem: fallbackMeridiem };
+  }
+  const [, hour, minute, meridiem] = match;
+  return { hour: hour.padStart(2, "0"), minute, meridiem: meridiem.toUpperCase() };
+}
+
+function to24HourMinutes(hour: string, minute: string, meridiem: string) {
+  let h = parseInt(hour, 10);
+  const m = parseInt(minute, 10);
+  if (meridiem === "AM") {
+    h = h === 12 ? 0 : h;
+  } else {
+    h = h === 12 ? 12 : h + 12;
+  }
+  return h * 60 + m;
+}
+
+function formatDisplayTime(hour: string, minute: string, meridiem: string) {
+  return `${hour}:${minute} ${meridiem}`;
+}
 
 export function QuoteScreen({ navigation }: Props) {
   const { onboarding, updateOnboarding } = useAppStore();
   const [workingDays, setWorkingDays] = useState<string[]>(onboarding.workingDays);
-  const [workStartTime, setWorkStartTime] = useState(onboarding.workStartTime);
-  const [workEndTime, setWorkEndTime] = useState(onboarding.workEndTime);
+  const startDefaults = parseTimeParts(onboarding.workStartTime || "09:00 AM", "09", "00", "AM");
+  const endDefaults = parseTimeParts(onboarding.workEndTime || "06:00 PM", "06", "00", "PM");
+  const [startHour, setStartHour] = useState(startDefaults.hour);
+  const [startMinute, setStartMinute] = useState(startDefaults.minute);
+  const [startMeridiem, setStartMeridiem] = useState(startDefaults.meridiem);
+  const [endHour, setEndHour] = useState(endDefaults.hour);
+  const [endMinute, setEndMinute] = useState(endDefaults.minute);
+  const [endMeridiem, setEndMeridiem] = useState(endDefaults.meridiem);
+  const [averageWeeklyEarnings, setAverageWeeklyEarnings] = useState(onboarding.averageWeeklyEarnings);
 
   const toggleDay = (day: string) => {
     setWorkingDays((prev) => (prev.includes(day) ? prev.filter((item) => item !== day) : [...prev, day]));
   };
 
+  const startInMinutes = to24HourMinutes(startHour, startMinute, startMeridiem);
+  const endInMinutes = to24HourMinutes(endHour, endMinute, endMeridiem);
+  const isTimeRangeValid = startInMinutes < endInMinutes;
+  const earningsNumber = parseFloat(averageWeeklyEarnings.replace(/,/g, "").trim());
+  const isEarningsValid = Number.isFinite(earningsNumber) && earningsNumber > 0;
+
   return (
-    <ScreenContainer>
+    <ScreenContainer onboardingStep={5}>
       <View style={styles.content}>
         <Text style={styles.title}>Step 5</Text>
         <Text style={styles.subtitle}>Working days and timing</Text>
@@ -39,19 +80,69 @@ export function QuoteScreen({ navigation }: Props) {
           })}
         </View>
 
-        <FormInput label="Start time" value={workStartTime} placeholder="Enter start time" onChangeText={setWorkStartTime} />
-        <FormInput label="End time" value={workEndTime} placeholder="Enter end time" onChangeText={setWorkEndTime} />
+        <Text style={styles.sectionLabel}>Start time</Text>
+        <View style={styles.timeRow}>
+          <View style={styles.timeCell}>
+            <SelectInput label="Hour" placeholder="HH" value={startHour} options={hourOptions} onSelect={setStartHour} />
+          </View>
+          <View style={styles.timeCell}>
+            <SelectInput
+              label="Minute"
+              placeholder="MM"
+              value={startMinute}
+              options={minuteOptions}
+              onSelect={setStartMinute}
+            />
+          </View>
+          <View style={styles.timeCell}>
+            <SelectInput
+              label="AM/PM"
+              placeholder="AM/PM"
+              value={startMeridiem}
+              options={meridiemOptions}
+              onSelect={setStartMeridiem}
+            />
+          </View>
+        </View>
+
+        <Text style={styles.sectionLabel}>End time</Text>
+        <View style={styles.timeRow}>
+          <View style={styles.timeCell}>
+            <SelectInput label="Hour" placeholder="HH" value={endHour} options={hourOptions} onSelect={setEndHour} />
+          </View>
+          <View style={styles.timeCell}>
+            <SelectInput label="Minute" placeholder="MM" value={endMinute} options={minuteOptions} onSelect={setEndMinute} />
+          </View>
+          <View style={styles.timeCell}>
+            <SelectInput label="AM/PM" placeholder="AM/PM" value={endMeridiem} options={meridiemOptions} onSelect={setEndMeridiem} />
+          </View>
+        </View>
+        {!isTimeRangeValid && (
+          <Text style={styles.errorText}>Start time must be earlier than end time.</Text>
+        )}
+
+        <FormInput
+          label="Average weekly earnings (INR)"
+          value={averageWeeklyEarnings}
+          placeholder="Example: 5000"
+          keyboardType="number-pad"
+          onChangeText={setAverageWeeklyEarnings}
+        />
+        {!isEarningsValid && averageWeeklyEarnings.trim().length > 0 && (
+          <Text style={styles.errorText}>Enter a valid earnings amount greater than zero.</Text>
+        )}
         <Text style={styles.note}>Approximate timing is okay.</Text>
       </View>
 
       <PrimaryButton
         label="Next"
-        disabled={workingDays.length === 0 || !workStartTime.trim() || !workEndTime.trim()}
+        disabled={workingDays.length === 0 || !isTimeRangeValid || !isEarningsValid}
         onPress={() => {
           updateOnboarding({
             workingDays,
-            workStartTime: workStartTime.trim(),
-            workEndTime: workEndTime.trim(),
+            workStartTime: formatDisplayTime(startHour, startMinute, startMeridiem),
+            workEndTime: formatDisplayTime(endHour, endMinute, endMeridiem),
+            averageWeeklyEarnings: averageWeeklyEarnings.trim(),
           });
           navigation.navigate("PlanSelection");
         }}
@@ -108,5 +199,26 @@ const styles = StyleSheet.create({
   note: {
     color: colors.muted,
     marginTop: 2,
+  },
+  sectionLabel: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: spacing.xs,
+  },
+  timeRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: spacing.sm,
+  },
+  timeCell: {
+    flex: 1,
+  },
+  errorText: {
+    color: colors.primaryDark,
+    marginTop: -8,
+    marginBottom: spacing.sm,
+    fontSize: 13,
+    fontWeight: "600",
   },
 });
