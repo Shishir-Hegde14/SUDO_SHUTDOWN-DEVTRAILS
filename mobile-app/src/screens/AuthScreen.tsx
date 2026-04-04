@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { PrimaryButton } from "../components/PrimaryButton";
+import { StatusMessageCard } from "../components/StatusMessageCard";
 import { colors, spacing, typography } from "../constants/theme";
 import { RootStackParamList } from "../navigation/types";
-import { authSignIn, getOnboarding, listMyPolicies, PolicyResponse } from "../services/backendApi";
+import { authSignIn, getApiErrorMessage, getOnboarding, listMyPolicies, PolicyResponse } from "../services/backendApi";
 import { useAppStore } from "../store/AppContext";
 import { initialOnboardingData, OnboardingData } from "../types/onboarding";
 
@@ -15,9 +16,9 @@ type Mode = "signup" | "signin";
 
 export function AuthScreen({ navigation }: Props) {
   const { setAuthSession, setOnboarding } = useAppStore();
-  const [mode, setMode] = useState<Mode>("signin");
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
 
   const cleanEmail = useMemo(() => email.trim().toLowerCase(), [email]);
   const isValidGmail = useMemo(
@@ -32,13 +33,13 @@ export function AuthScreen({ navigation }: Props) {
     }
 
     if (!isValidGmail) {
-      Alert.alert("Invalid Gmail", "Enter a valid Gmail address (example@gmail.com).");
+      setError("Enter a valid Gmail address (example@gmail.com).");
       return;
     }
 
     try {
       setBusy(true);
-      setMode(nextMode);
+      setError("");
       const auth = await authSignIn(cleanEmail);
       await setAuthSession(auth.token, auth.user);
 
@@ -50,18 +51,18 @@ export function AuthScreen({ navigation }: Props) {
         policies = [];
       }
       const base = existingOnboarding ? (existingOnboarding as OnboardingData) : initialOnboardingData;
-      if (policies.length > 0) {
-        const latest = policies[0];
+      const active = policies.find((item) => item.status === "active");
+      if (active) {
         setOnboarding({
           ...base,
           policyPurchased: true,
           purchasedPolicy: {
-            policyId: latest.policy_id,
-            planName: latest.plan || latest.plan_name || "Policy",
-            premium: latest.premium,
-            coverage: latest.coverage,
-            payoutDate: latest.payout_date,
-            status: latest.status,
+            policyId: active.policy_id,
+            planName: active.plan || active.plan_name || "Policy",
+            premium: active.premium,
+            coverage: active.coverage,
+            payoutDate: active.payout_date,
+            status: active.status,
           },
         });
       } else {
@@ -69,8 +70,7 @@ export function AuthScreen({ navigation }: Props) {
       }
       navigation.replace("MainApp");
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unable to authenticate right now.";
-      Alert.alert("Authentication failed", message);
+      setError(getApiErrorMessage(err, "Unable to authenticate right now."));
     } finally {
       setBusy(false);
     }
@@ -81,6 +81,7 @@ export function AuthScreen({ navigation }: Props) {
       <View style={styles.wrap}>
         <Text style={styles.title}>Access LastMile</Text>
         <Text style={styles.subtitle}>Sign up with onboarding, or sign in with your Gmail.</Text>
+        {!!error && <StatusMessageCard title="Sign in issue" message={error} />}
 
         <PrimaryButton
           label="Sign Up"
@@ -92,7 +93,12 @@ export function AuthScreen({ navigation }: Props) {
           <TextInput
             style={styles.input}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(value) => {
+              setEmail(value);
+              if (error) {
+                setError("");
+              }
+            }}
             autoCapitalize="none"
             keyboardType="email-address"
             autoCorrect={false}

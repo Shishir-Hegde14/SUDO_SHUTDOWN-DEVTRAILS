@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import * as Network from "expo-network";
 import { FormInput } from "../components/FormInput";
-import { InfoCard } from "../components/InfoCard";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { SelectInput } from "../components/SelectInput";
+import { StatusMessageCard } from "../components/StatusMessageCard";
 import { colors, spacing, typography } from "../constants/theme";
 import { RootStackParamList } from "../navigation/types";
 import { useAppStore } from "../store/AppContext";
-import { ApiError, authSignUp, requestQuote, saveOnboarding } from "../services/backendApi";
+import { ApiError, authSignUp, getApiErrorMessage, requestQuote, saveOnboarding } from "../services/backendApi";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PolicyConfirmation">;
 
@@ -43,13 +42,6 @@ export function PolicyConfirmationScreen({ navigation }: Props) {
         const signup = await authSignUp(email, onboarding.fullName.trim() || undefined);
         await setAuthSession(signup.token, signup.user);
         sessionToken = signup.token;
-      }
-
-      const networkState = await Network.getNetworkStateAsync();
-      const hasNetwork = Boolean(networkState.isConnected) && networkState.isInternetReachable !== false;
-      if (!hasNetwork) {
-        setConnectionError("Network issue: unable to connect to WiFi or internet.");
-        return;
       }
 
       const latitude = onboarding.workAreaLatitude ?? onboarding.homeLatitude ?? undefined;
@@ -111,18 +103,11 @@ export function PolicyConfirmationScreen({ navigation }: Props) {
 
       navigation.reset({ index: 0, routes: [{ name: "MainApp" }] });
     } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.type === "server_unreachable") {
-          setConnectionError("Server issue: backend is unreachable. Please ensure server is running.");
-          return;
-        }
-        setConnectionError(`Server error: ${err.message}`);
-        if (err.message.toLowerCase().includes("email already in use")) {
-          setConnectionError("Email already exists. Use Sign In on the first screen for this Gmail.");
-        }
+      if (err instanceof ApiError && err.message.toLowerCase().includes("email already in use")) {
+        setConnectionError("Email already exists. Use Sign In on the first screen for this Gmail.");
         return;
       }
-      setConnectionError("Unexpected issue while requesting quote.");
+      setConnectionError(getApiErrorMessage(err, "Unexpected issue while requesting quote."));
     } finally {
       setLoading(false);
     }
@@ -140,22 +125,37 @@ export function PolicyConfirmationScreen({ navigation }: Props) {
           placeholder="Select bank"
           value={bankName}
           options={["State Bank of India", "HDFC Bank", "ICICI Bank", "Axis Bank", "Kotak Mahindra Bank"]}
-          onSelect={setBankName}
+          onSelect={(value) => {
+            setBankName(value);
+            if (connectionError) {
+              setConnectionError("");
+            }
+          }}
         />
         <FormInput
           label="Account number"
           value={bankAccountNumber}
           keyboardType="number-pad"
           placeholder="Enter account number"
-          onChangeText={setBankAccountNumber}
+          onChangeText={(value) => {
+            setBankAccountNumber(value);
+            if (connectionError) {
+              setConnectionError("");
+            }
+          }}
         />
         <FormInput
           label="Bank address"
           value={bankAddress}
           placeholder="Enter bank branch address"
-          onChangeText={setBankAddress}
+          onChangeText={(value) => {
+            setBankAddress(value);
+            if (connectionError) {
+              setConnectionError("");
+            }
+          }}
         />
-        {!!connectionError && <Text style={styles.error}>{connectionError}</Text>}
+        {!!connectionError && <StatusMessageCard title="Unable to load quote" message={connectionError} />}
         {loading && <ActivityIndicator style={styles.loader} color={colors.primary} />}
       </View>
 
@@ -186,12 +186,6 @@ const styles = StyleSheet.create({
   info: {
     color: colors.muted,
     marginBottom: spacing.md,
-  },
-  error: {
-    color: colors.primaryDark,
-    fontSize: 13,
-    fontWeight: "700",
-    marginBottom: spacing.sm,
   },
   loader: {
     marginBottom: spacing.sm,

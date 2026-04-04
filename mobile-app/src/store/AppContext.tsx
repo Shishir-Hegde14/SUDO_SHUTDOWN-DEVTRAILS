@@ -1,6 +1,6 @@
 import { createContext, PropsWithChildren, useContext, useEffect, useMemo, useState } from "react";
 import * as SecureStore from "expo-secure-store";
-import { authSession, AuthUser, getOnboarding, listMyPolicies, PolicyResponse } from "../services/backendApi";
+import { ApiError, authSession, AuthUser, getOnboarding, listMyPolicies, PolicyResponse } from "../services/backendApi";
 import { initialOnboardingData, OnboardingData, PlanType } from "../types/onboarding";
 
 const TOKEN_KEY = "lm_auth_token";
@@ -28,17 +28,24 @@ function mergePolicyState(base: OnboardingData, policies: PolicyResponse[] | nul
       purchasedPolicy: null,
     };
   }
-  const latest = policies[0];
+  const active = policies.find((item) => item.status === "active");
+  if (!active) {
+    return {
+      ...base,
+      policyPurchased: false,
+      purchasedPolicy: null,
+    };
+  }
   return {
     ...base,
     policyPurchased: true,
     purchasedPolicy: {
-      policyId: latest.policy_id,
-      planName: latest.plan || latest.plan_name || "Policy",
-      premium: latest.premium,
-      coverage: latest.coverage,
-      payoutDate: latest.payout_date,
-      status: latest.status,
+      policyId: active.policy_id,
+      planName: active.plan || active.plan_name || "Policy",
+      premium: active.premium,
+      coverage: active.coverage,
+      payoutDate: active.payout_date,
+      status: active.status,
     },
   };
 }
@@ -56,18 +63,35 @@ export function AppProvider({ children }: PropsWithChildren) {
         const userRaw = await SecureStore.getItemAsync(USER_KEY);
         if (token && userRaw) {
           const parsedUser = JSON.parse(userRaw) as AuthUser;
-          // Validate session with backend and rehydrate onboarding snapshot.
-          const user = await authSession(token);
           setAuthToken(token);
-          setAuthUser(user.email ? user : parsedUser);
-          const saved = await getOnboarding(token);
+          setAuthUser(parsedUser);
+
+          // Validate session with backend and rehydrate onboarding snapshot.
+          try {
+            const user = await authSession(token);
+            setAuthUser(user.email ? user : parsedUser);
+          } catch (err) {
+            if (!(err instanceof ApiError) || err.type === "bad_response") {
+              throw err;
+            }
+          }
+
+          let savedState = initialOnboardingData;
+          try {
+            const saved = await getOnboarding(token);
+            savedState = saved ? (saved as OnboardingData) : initialOnboardingData;
+          } catch (err) {
+            if (!(err instanceof ApiError) || err.type === "bad_response") {
+              throw err;
+            }
+          }
+
           let policies: PolicyResponse[] = [];
           try {
             policies = await listMyPolicies(token);
           } catch {
             policies = [];
           }
-          const savedState = saved ? (saved as OnboardingData) : initialOnboardingData;
           setOnboardingState(mergePolicyState(savedState, policies));
         }
       } catch {

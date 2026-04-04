@@ -5,9 +5,10 @@ import { FormInput } from "../components/FormInput";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { ScreenContainer } from "../components/ScreenContainer";
 import { SelectInput } from "../components/SelectInput";
+import { StatusMessageCard } from "../components/StatusMessageCard";
 import { colors, spacing, typography } from "../constants/theme";
 import { RootStackParamList } from "../navigation/types";
-import { createPolicyPurchase, saveOnboarding } from "../services/backendApi";
+import { createPolicyPurchase, getApiErrorMessage, saveOnboarding } from "../services/backendApi";
 import { useAppStore } from "../store/AppContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Payment">;
@@ -19,6 +20,7 @@ export function PaymentScreen({ navigation, route }: Props) {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [upiId, setUpiId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const plan = useMemo(
     () => onboarding.quotePlans.find((item) => item.name === route.params.planName),
@@ -27,11 +29,12 @@ export function PaymentScreen({ navigation, route }: Props) {
 
   const onPay = async () => {
     if (!authToken || !plan || !onboarding.quoteId) {
-      Alert.alert("Unable to process", "Missing quote or session details.");
+      setError("Missing quote or session details. Please restart from onboarding.");
       return;
     }
     try {
       setLoading(true);
+      setError("");
       const policy = await createPolicyPurchase(authToken, {
         quote_id: onboarding.quoteId,
         selected_plan_name: plan.name,
@@ -58,8 +61,7 @@ export function PaymentScreen({ navigation, route }: Props) {
       Alert.alert("Payment success", "Policy purchased successfully.");
       navigation.reset({ index: 0, routes: [{ name: "MainApp" }] });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Payment failed.";
-      Alert.alert("Payment failed", msg);
+      setError(getApiErrorMessage(err, "Payment failed. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -78,20 +80,31 @@ export function PaymentScreen({ navigation, route }: Props) {
       <Text style={styles.title}>Mock Payment</Text>
       <Text style={styles.subtitle}>Pay for {plan.name} policy</Text>
       <Text style={styles.amount}>INR {plan.premium.toFixed(2)}</Text>
+      {!!error && <StatusMessageCard title="Payment issue" message={error} />}
 
       <SelectInput
         label="Payment app"
         placeholder="Choose payment option"
         value={paymentMethod}
         options={METHODS}
-        onSelect={setPaymentMethod}
+        onSelect={(value) => {
+          setPaymentMethod(value);
+          if (error) {
+            setError("");
+          }
+        }}
       />
       <FormInput
         label="UPI ID"
         value={upiId}
         placeholder="example@upi"
         autoCapitalize="none"
-        onChangeText={setUpiId}
+        onChangeText={(value) => {
+          setUpiId(value);
+          if (error) {
+            setError("");
+          }
+        }}
       />
 
       <PrimaryButton

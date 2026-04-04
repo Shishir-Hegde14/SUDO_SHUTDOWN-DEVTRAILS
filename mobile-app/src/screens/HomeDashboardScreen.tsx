@@ -43,7 +43,7 @@ export function HomeDashboardScreen() {
         <Text style={styles.heroMeta}>
           {onboarding.policyPurchased && onboarding.purchasedPolicy
             ? `Active policy ID: ${onboarding.purchasedPolicy.policyId.slice(0, 8)}...`
-            : "You can buy one policy per account."}
+            : "Buy weekly protection plans based on current quote cycle."}
         </Text>
       </LinearGradient>
 
