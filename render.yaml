@@ -1,0 +1,45 @@
+databases:
+  - name: lastmile-db
+    databaseName: lastmile
+    user: lastmile_user
+
+services:
+  - type: web
+    name: lastmile-api
+    env: python
+    rootDir: SUDO_SHUTDOWN-DEVTRAILS-pricing2/SUDO_SHUTDOWN-DEVTRAILS-pricing
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --bind 0.0.0.0:$PORT --workers 2 --timeout 120
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lastmile-db
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: CRON_SECRET
+        sync: false
+      - key: HOLIDAY_API_KEY
+        sync: false
+      - key: FUEL_API_KEY
+        sync: false
+      - key: FUEL_API_URL
+        sync: false
+
+  - type: cron
+    name: lastmile-daily-claims
+    env: python
+    rootDir: SUDO_SHUTDOWN-DEVTRAILS-pricing2/SUDO_SHUTDOWN-DEVTRAILS-pricing
+    schedule: "0 1 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: >
+      python -c "import os,requests; url=os.environ['API_BASE_URL'].rstrip('/') + '/claims/run-daily';
+      h={'X-Cron-Token': os.environ['CRON_SECRET']};
+      r=requests.post(url, headers=h, timeout=30);
+      print(r.status_code); print(r.text[:500]); r.raise_for_status()"
+    envVars:
+      - key: API_BASE_URL
+        sync: false
+      - key: CRON_SECRET
+        sync: false

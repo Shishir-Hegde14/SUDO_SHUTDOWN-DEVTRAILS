@@ -1,0 +1,11 @@
+**/.venv/
+**/__pycache__/
+*.pyc
+*.pyo
+*.db
+
+mobile-app/node_modules/
+mobile-app/.expo/
+
+old_remove/
+SUDO_SHUTDOWN-DEVTRAILS-pricing.zip
