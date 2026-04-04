@@ -1,0 +1,27 @@
+name: Daily Claims Monitor
+
+on:
+  schedule:
+    # Runs daily at 02:30 UTC (~08:00 IST).
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-claims-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger backend claims monitor
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${API_BASE_URL}" ] || [ -z "${CRON_SECRET}" ]; then
+            echo "Missing required secrets: API_BASE_URL and/or CRON_SECRET"
+            exit 1
+          fi
+          curl --fail --show-error --silent \
+            -X POST "${API_BASE_URL}/claims/run-daily" \
+            -H "X-Cron-Token: ${CRON_SECRET}" \
+            -H "Content-Type: application/json"
+          echo "Daily claims monitor triggered successfully."
